@@ -1,0 +1,41 @@
+import re
+import string
+import joblib
+import pandas as pd
+from nltk.corpus import stopwords
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import LogisticRegression
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+# Sample data
+data = pd.read_excel('/content/sample_data/drugsCom_raw (2) (1).xlsx')
+data.drop(columns='Unnamed: 0', inplace=True)
+target_conditions = ['Depression', 'High Blood Pressure', 'Diabetes, Type 2']
+data = data[data['condition'].isin(target_conditions)]
+
+# Preprocessing
+def preprocess_text(text):
+    text = text.lower()
+    text = re.sub(f'[{re.escape(string.punctuation)}]', '', text)
+    text = re.sub(r'\d+', '', text)
+    text = re.sub(r'\s+', ' ', text)
+    stop_words = set(stopwords.words('english'))
+    words = text.split()
+    words = [w for w in words if w not in stop_words]
+    return ' '.join(words)
+
+df["clean_review"] = df["review"].apply(preprocess_text)
+df["sentiment"] = df["rating"].apply(lambda x: 'positive' if x >= 7 else ('neutral' if x == 6 else 'negative'))
+
+# Train pipeline
+X = df["clean_review"]
+y = df["sentiment"]
+pipeline = Pipeline([
+    ('tfidf', TfidfVectorizer(max_features=1000)),
+    ('clf', LogisticRegression())
+])
+pipeline.fit(X, y)
+
+# Save model
+joblib.dump(pipeline, "sentiment_model_pipeline.pkl")
+print("✅ Model saved as sentiment_model_pipeline.pkl")
