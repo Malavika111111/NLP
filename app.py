@@ -3,13 +3,16 @@ import joblib
 import nltk
 import re
 import string
+import os
 from bs4 import BeautifulSoup
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 
 # Load model and vectorizer
-model = joblib.load("main/svm_sentiment_model.pkl")
-vectorizer = joblib.load("main/tfidf_vectorizer.pkl")
+BASE_PATH = os.path.dirname(__file__)
+model = joblib.load(os.path.join(BASE_PATH, "main/svm_sentiment_model.pkl"))
+vectorizer = joblib.load(os.path.join(BASE_PATH, "main/tfidf_vectorizer.pkl"))
+
 
 # Download NLTK data (only needed once)
 nltk.download("stopwords")
