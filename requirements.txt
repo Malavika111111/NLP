@@ -1,3 +1,6 @@
 streamlit
-joblib
 scikit-learn
+joblib
+nltk
+beautifulsoup4
+pandas
