@@ -8,8 +8,8 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 
 # Load model and vectorizer
-model = joblib.load("svm_sentiment_model.pkl")
-vectorizer = joblib.load("tfidf_vectorizer.pkl")
+model = joblib.load("main/svm_sentiment_model.pkl")
+vectorizer = joblib.load("main/tfidf_vectorizer.pkl")
 
 # Download NLTK data (only needed once)
 nltk.download("stopwords")
