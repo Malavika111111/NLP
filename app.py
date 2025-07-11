@@ -42,7 +42,7 @@ def clean_text(text):
 # File paths
 st.set_page_config(page_title="Drug Review Analyzer", layout="centered")
 BASE_PATH = os.path.dirname(__file__)
-model_path = os.path.join(BASE_PATH, "svm_sentiment_model.pkl")
+model_path = os.path.join(BASE_PATH, "svm_sentiment_model (1).pkl")
 vectorizer_path = os.path.join(BASE_PATH, "tfidf_vectorizer.pkl")
 
 # Show file debug info
