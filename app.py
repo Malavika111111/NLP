@@ -24,12 +24,11 @@ condition_to_meds = {
     "Diabetes": ["Metformin", "Insulin", "Glipizide"]
 }
 
-# ✅ Text preprocessing
 def clean_text(text):
     text = BeautifulSoup(text, "html.parser").get_text()
     text = re.sub(r'[^a-zA-Z\s]', '', text.lower())
     text = text.translate(str.maketrans('', '', string.punctuation))
-    tokens = nltk.word_tokenize(text)
+    tokens = re.findall(r'\b\w+\b', text)  # ✅ Regex tokenizer (no punkt needed)
     lemmatizer = WordNetLemmatizer()
     stop_words = set(stopwords.words("english"))
     tokens = [lemmatizer.lemmatize(w) for w in tokens if w not in stop_words]
