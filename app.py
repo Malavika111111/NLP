@@ -8,27 +8,25 @@ from bs4 import BeautifulSoup
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 
-st.write("🗂 Current working directory:", os.getcwd())
-st.write("📁 Files in current directory:", os.listdir())
-
-# Load model and vectorizer
-BASE_PATH = os.path.dirname(__file__)
-model = joblib.load(os.path.join(BASE_PATH, "svm_sentiment_model.pkl"))
-vectorizer = joblib.load(os.path.join(BASE_PATH, "tfidf_vectorizer.pkl"))
-
-# Download NLTK data (only needed once)
+# ⛏ NLTK Downloads (Only once if not already present)
 nltk.download("stopwords")
 nltk.download("punkt")
 nltk.download("wordnet")
 
-# In-code mapping of condition to suggested medicines
+# 🧠 Medicine suggestions per condition
 condition_to_meds = {
     "Depression": ["Zoloft", "Prozac", "Lexapro"],
     "High Blood Pressure": ["Lisinopril", "Amlodipine", "Losartan"],
     "Diabetes": ["Metformin", "Insulin", "Glipizide"]
 }
 
-# Text cleaning function
+label_to_condition = {
+    0: "Depression",
+    1: "High Blood Pressure",
+    2: "Diabetes"
+}
+
+# 🧹 Review Text Cleaning
 def clean_text(text):
     text = BeautifulSoup(text, "html.parser").get_text()
     text = re.sub(r'[^a-zA-Z\s]', '', text)
@@ -40,24 +38,46 @@ def clean_text(text):
     tokens = [lemmatizer.lemmatize(w) for w in tokens if w not in stop_words]
     return ' '.join(tokens)
 
-# Streamlit UI
+# 📁 File & Path Setup
 st.set_page_config(page_title="Drug Review Analyzer", layout="centered")
-st.title("💊 Drug Review Sentiment Analyzer")
-st.markdown("Analyze user reviews for **Depression**, **High Blood Pressure**, or **Diabetes** drugs.")
+BASE_PATH = os.path.dirname(__file__)
+model_path = os.path.join(BASE_PATH, "svm_sentiment_model.pkl")
+vectorizer_path = os.path.join(BASE_PATH, "tfidf_vectorizer.pkl")
 
-condition = st.selectbox("Select Condition", list(condition_to_meds.keys()))
+# 🛠 Debug output
+st.write("🗂 Current working directory:", os.getcwd())
+st.write("📁 Files in current directory:", os.listdir())
+
+# 🔐 File check before loading
+if not os.path.exists(model_path):
+    st.error("❌ Model file not found!")
+    st.stop()
+
+if not os.path.exists(vectorizer_path):
+    st.error("❌ Vectorizer file not found!")
+    st.stop()
+
+# 🔁 Load model & vectorizer
+model = joblib.load(model_path)
+vectorizer = joblib.load(vectorizer_path)
+
+# 🎨 Streamlit UI
+st.title("💊 Drug Review Condition Classifier")
+st.markdown("Predict the **medical condition** from a user's drug review and suggest medicines.")
+
+# 📝 User input
 review_text = st.text_area("Enter your review:", height=200)
 
+# 🔘 Prediction
 if st.button("Analyze"):
     if not review_text.strip():
-        st.warning("Please enter a review.")
+        st.warning("⚠️ Please enter a valid review.")
     else:
         cleaned = clean_text(review_text)
         vectorized = vectorizer.transform([cleaned])
         prediction = model.predict(vectorized)[0]
+        predicted_condition = label_to_condition.get(prediction, "Unknown")
 
-        sentiment = "Positive 😊" if prediction == 1 else "Negative 😞"
-        st.subheader(f"Sentiment: {sentiment}")
-
+        st.subheader(f"🧠 Predicted Condition: **{predicted_condition}**")
         st.markdown("### 💊 Suggested Medicines:")
-        st.success(", ".join(condition_to_meds.get(condition, ["No medicine suggestions available."])))
+        st.success(", ".join(condition_to_meds.get(predicted_condition, ["No suggestions available."])))
