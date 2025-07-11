@@ -13,28 +13,36 @@ nltk.download('stopwords')
 nltk.download('wordnet')
 
 # Load model and vectorizer
-model = joblib.load("svm_sentiment_model (1).pkl")  # Rename properly if needed
+model = joblib.load("svm_sentiment_model (1).pkl")  
 vectorizer = joblib.load("tfidf_vectorizer.pkl")
 
-# Suggested medicines based on predicted condition
+# Suggested medicines
 condition_to_meds = {
     "Depression": ["Zoloft", "Prozac", "Lexapro"],
     "High Blood Pressure": ["Lisinopril", "Amlodipine", "Losartan"],
     "Diabetes": ["Metformin", "Insulin", "Glipizide"]
 }
 
-# Clean and preprocess text
+# Text cleaner
 def clean_text(text):
     text = BeautifulSoup(text, "html.parser").get_text()
     text = re.sub(r'[^a-zA-Z\s]', '', text.lower())
     text = text.translate(str.maketrans('', '', string.punctuation))
-    tokens = re.findall(r'\b\w+\b', text)  # regex tokenizer (no punkt)
+    tokens = re.findall(r'\b\w+\b', text)
     lemmatizer = WordNetLemmatizer()
     stop_words = set(stopwords.words("english"))
     tokens = [lemmatizer.lemmatize(w) for w in tokens if w not in stop_words]
     return ' '.join(tokens)
 
-# Streamlit UI
+# Rule-based sentiment
+def simple_sentiment_score(text):
+    positive_keywords = ["changed my life", "feel better", "more energy", "improved", "no side effects", "happy"]
+    for word in positive_keywords:
+        if word in text.lower():
+            return "Positive 😊"
+    return "Negative 😞"
+
+# Streamlit App
 st.set_page_config(page_title="💊 Drug Review Analyzer")
 st.title("💊 Drug Review Condition & Sentiment Classifier")
 st.markdown("Enter a drug review to predict the **medical condition** and detect if the **sentiment is Positive or Negative**.")
@@ -49,13 +57,9 @@ if st.button("🔍 Analyze Review"):
         vec = vectorizer.transform([cleaned])
         prediction = model.predict(vec)[0]
 
-        # ➤ Label mapping
         condition_map = {0: "Depression", 1: "High Blood Pressure", 2: "Diabetes"}
-        sentiment_map = {0: "Negative 😞", 1: "Positive 😊"}  # SVM label = sentiment
-
-        # Output
         predicted_condition = condition_map.get(prediction, "Unknown")
-        predicted_sentiment = sentiment_map.get(prediction, "Neutral ❓")
+        predicted_sentiment = simple_sentiment_score(review_text)
 
         st.subheader(f"🧠 Predicted Condition: {predicted_condition}")
         st.subheader(f"📊 Sentiment: {predicted_sentiment}")
