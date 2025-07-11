@@ -13,9 +13,8 @@ st.write("📁 Files in current directory:", os.listdir())
 
 # Load model and vectorizer
 BASE_PATH = os.path.dirname(__file__)
-model = joblib.load(os.path.join(BASE_PATH, "main/svm_sentiment_model.pkl"))
-vectorizer = joblib.load(os.path.join(BASE_PATH, "main/tfidf_vectorizer.pkl"))
-
+model = joblib.load(os.path.join(BASE_PATH, "svm_sentiment_model.pkl"))
+vectorizer = joblib.load(os.path.join(BASE_PATH, "tfidf_vectorizer.pkl"))
 
 # Download NLTK data (only needed once)
 nltk.download("stopwords")
